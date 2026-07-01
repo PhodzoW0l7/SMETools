@@ -5,6 +5,8 @@
 /tmp
 /out-tsc
 /bazel-out
+/environments/environments
+/environments/environments.development
 
 # Node
 /node_modules
