@@ -7,7 +7,7 @@ import {createClient,SupabaseClient} from '@supabase/supabase-js'
 })
 export class Supabase {
 
-  public client: SupabaseClient;
+    public client: SupabaseClient;
 
   constructor(){
     this.client=createClient(
