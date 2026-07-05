@@ -347,3 +347,9 @@ END;
 $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
 GRANT EXECUTE ON FUNCTION custom_access_token_hook TO supabase_auth_admin;
+
+
+CREATE POLICY "anon can insert organisation on register"
+  ON organisations FOR INSERT
+  TO anon
+  WITH CHECK (true);

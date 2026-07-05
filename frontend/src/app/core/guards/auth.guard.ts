@@ -1,40 +1,49 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router, UrlTree } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { UserRole } from '../../shared/models/index';
+import { Supabase } from '../supabase';
+import { UserRole } from '../../shared/models';
 
-// ── Guard: Require Authentication ────────────────────────────
-export const authGuard: CanActivateFn = (): boolean | UrlTree => {
-  const auth   = inject(AuthService);
-  const router = inject(Router);
+export const authGuard: CanActivateFn = async () => {
+  const auth     = inject(AuthService);
+  const supabase = inject(Supabase);
+  const router   = inject(Router);
 
-  return auth.isLoggedIn() ? true : router.createUrlTree(['/auth/login']);
+  // Check the actual Supabase session — not just the signal
+  // The signal may not be set yet on first load
+  const { data: { session } } = await supabase.client.auth.getSession();
+
+  if (session) return true;
+
+  router.navigate(['/auth/login']);
+  return false;
 };
 
-// ── Guard: Require Specific Roles ────────────────────────────
-export const roleGuard = (allowedRoles: UserRole[]): CanActivateFn => {
-  return (): boolean | UrlTree => {
-    const auth   = inject(AuthService);
-    const router = inject(Router);
+export const publicOnlyGuard: CanActivateFn = async () => {
+  const supabase = inject(Supabase);
+  const router   = inject(Router);
 
-    // If not logged in at all, send to login instead of inbox
-    if (!auth.isLoggedIn()) {
-      return router.createUrlTree(['/auth/login']);
-    }
+  const { data: { session } } = await supabase.client.auth.getSession();
+
+  if (!session) return true;
+
+  router.navigate(['/inbox']);
+  return false;
+};
+
+export const roleGuard = (allowedRoles: UserRole[]): CanActivateFn => {
+  return async () => {
+    const auth     = inject(AuthService);
+    const supabase = inject(Supabase);
+    const router   = inject(Router);
+
+    const { data: { session } } = await supabase.client.auth.getSession();
+    if (!session) { router.navigate(['/auth/login']); return false; }
 
     const role = auth.role();
-    if (role && allowedRoles.includes(role as UserRole)) {
-      return true;
-    }
+    if (role && allowedRoles.includes(role as UserRole)) return true;
 
-    return router.createUrlTree(['/inbox']);
+    router.navigate(['/inbox']);
+    return false;
   };
-};
-
-// ── Guard: Prevent Authenticated Users from Public Routes ────
-export const publicOnlyGuard: CanActivateFn = (): boolean | UrlTree => {
-  const auth   = inject(AuthService);
-  const router = inject(Router);
-
-  return !auth.isLoggedIn() ? true : router.createUrlTree(['/inbox']);
 };

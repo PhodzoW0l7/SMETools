@@ -1,15 +1,7 @@
-// ============================================================
 // callback.component.ts
-// Landing page for OAuth and email confirmation redirects.
-// Supabase exchanges the code for a session automatically —
-// we just wait for the auth state change then redirect.
-// ============================================================
-
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Supabase } from '../../../core/supabase';
-import { AuthChangeEvent } from '@supabase/supabase-js';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-callback',
@@ -23,32 +15,36 @@ import { Subscription } from 'rxjs';
 export class CallbackComponent implements OnInit, OnDestroy {
   private supabase = inject(Supabase);
   private router = inject(Router);
-  private authSubscription?: any; // Stores the Supabase subscription object
+  private authSubscription?: { unsubscribe: () => void };
 
   async ngOnInit(): Promise<void> {
-    // Supabase JS handles the token exchange from the URL hash automatically.
-    // We check if a session is already established on load.
-    const { data: { session } } = await this.supabase.client.auth.getSession();
+    // Check for error in URL (e.g., OAuth denied)
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    const errorDescription = params.get('error_description');
+    if (error) {
+      console.error('OAuth error:', error, errorDescription);
+      this.router.navigate(['/auth/login'], { queryParams: { error: errorDescription || error } });
+      return;
+    }
 
+    // Check if session already exists (e.g., after email confirmation)
+    const { data: { session } } = await this.supabase.client.auth.getSession();
     if (session) {
       this.router.navigate(['/inbox']);
       return;
     }
 
-    // Listen for the session to arrive after the hash/code exchange completes
-    const { data } = this.supabase.client.auth.onAuthStateChange((event: AuthChangeEvent) => {
+    // Listen for the session to arrive after the OAuth callback
+    const { data } = this.supabase.client.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
         this.router.navigate(['/inbox']);
       }
     });
-    
     this.authSubscription = data.subscription;
   }
 
   ngOnDestroy(): void {
-    // Clean up the auth state listener to avoid memory leaks
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
+    this.authSubscription?.unsubscribe();
   }
 }

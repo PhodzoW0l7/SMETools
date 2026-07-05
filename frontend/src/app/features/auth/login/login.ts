@@ -1,14 +1,7 @@
-// ============================================================
-// login.component.ts
-// Handles email/password login and OAuth login.
-// On success, AuthService.loadSession() fires and the
-// onAuthStateChange listener redirects to /inbox.
-// ============================================================
-
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -135,16 +128,16 @@ import { AuthService } from '../../../core/services/auth.service';
     .switch-link a { color: var(--color-text-info); text-decoration: none; }
   `]
 })
-export class Login {
+export class LoginComponent {
 
-  form: FormGroup;
-  loading  = signal(false);
+  form:         FormGroup;
+  loading      = signal(false);
   errorMessage = signal('');
 
   constructor(
-    private fb: FormBuilder,
-    private auth: AuthService,
-    private router: Router
+    private fb:   FormBuilder,
+    private auth: AuthService
+    // ← Router removed — navigation handled inside AuthService.loadSession()
   ) {
     this.form = this.fb.group({
       email:    ['', [Validators.required, Validators.email]],
@@ -163,11 +156,12 @@ export class Login {
         this.form.value.email,
         this.form.value.password
       );
-      this.router.navigate(['/inbox']);
+      // No navigation here — AuthService.loadSession() handles it
+      // loading stays true until onAuthStateChange fires and page changes
     } catch (err: any) {
+      // Only reaches here if signInWithPassword itself fails (wrong password etc)
       this.errorMessage.set(err.message ?? 'Login failed. Please try again.');
-    } finally {
-      this.loading.set(false);
+      this.loading.set(false);  // Reset only on error — success navigates away
     }
   }
 
