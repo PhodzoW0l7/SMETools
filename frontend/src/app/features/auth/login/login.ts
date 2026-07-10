@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router'
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -136,8 +136,8 @@ export class LoginComponent {
 
   constructor(
     private fb:   FormBuilder,
-    private auth: AuthService
-    // ← Router removed — navigation handled inside AuthService.loadSession()
+    private auth: AuthService,
+     private router: Router
   ) {
     this.form = this.fb.group({
       email:    ['', [Validators.required, Validators.email]],
@@ -156,11 +156,9 @@ export class LoginComponent {
         this.form.value.email,
         this.form.value.password
       );
-      // No navigation here — AuthService.loadSession() handles it
-      // loading stays true until onAuthStateChange fires and page changes
+      await this.router.navigate(['/inbox']); 
     } catch (err: any) {
-      // Only reaches here if signInWithPassword itself fails (wrong password etc)
-      this.errorMessage.set(err.message ?? 'Login failed. Please try again.');
+=      this.errorMessage.set(err.message ?? 'Login failed. Please try again.');
       this.loading.set(false);  // Reset only on error — success navigates away
     }
   }

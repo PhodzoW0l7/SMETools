@@ -1,1 +1,1 @@
-GRANT SELECT ON public.users TO supabase_auth_admin;
+SELECT now();
