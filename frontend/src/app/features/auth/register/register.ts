@@ -9,7 +9,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -20,6 +20,13 @@ import { AuthService } from '../../../core/services/auth.service';
       <div class="auth-card">
 
         @if (!submitted()) {
+          <div style="margin-bottom: 1.5rem; text-align: center;">
+      <img 
+        src="logo.png" 
+        alt="Logo" 
+        style="height: 200px; width: auto; display: inline-block;" 
+      />
+    </div>
           <h1>Register your organisation</h1>
           <p class="subtitle">Set up your workspace in under a minute</p>
 

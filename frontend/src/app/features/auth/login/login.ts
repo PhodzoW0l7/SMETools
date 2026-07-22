@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router'
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -11,6 +11,13 @@ import { AuthService } from '../../../core/services/auth.service';
   template: `
     <div class="auth-layout">
       <div class="auth-card">
+      <div style="margin-bottom: 1.5rem; text-align: center;">
+      <img 
+        src="logo.png" 
+        alt="Logo" 
+        style="height: 200px; width: auto; display: inline-block;" 
+      />
+    </div>
         <h1>Welcome back</h1>
         <p class="subtitle">Sign in to your workspace</p>
 
@@ -158,7 +165,8 @@ export class LoginComponent {
       );
       await this.router.navigate(['/inbox']); 
     } catch (err: any) {
-=      this.errorMessage.set(err.message ?? 'Login failed. Please try again.');
+      // Only reaches here if signInWithPassword itself fails (wrong password etc)
+      this.errorMessage.set(err.message ?? 'Login failed. Please try again.');
       this.loading.set(false);  // Reset only on error — success navigates away
     }
   }

@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { Routes } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-inbox-placeholder',
