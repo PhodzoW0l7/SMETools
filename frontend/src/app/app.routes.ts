@@ -2,8 +2,10 @@ import { Routes } from '@angular/router';
 import { authGuard, publicOnlyGuard, roleGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
+  // Default redirect — authGuard will bounce unauthenticated to login
+  { path: '', redirectTo: 'inbox', pathMatch: 'full' },
 
+  // ── Public Auth Routes ──
   {
     path: 'auth',
     canActivate: [publicOnlyGuard],
@@ -11,45 +13,60 @@ export const routes: Routes = [
       import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
   },
 
+  // ── Protected Shell (sidebar + topbar + main content) ──
   {
-    path: 'inbox',
+    path: '',
     canActivate: [authGuard],
-    loadChildren: () =>
-      import('./features/inbox/inbox.routes').then(m => m.INBOX_ROUTES),
-  },
-  {
-    path: 'tickets',
-    canActivate: [authGuard],
-    loadChildren: () =>
-      import('./features/tickets/tickets.routes').then(m => m.TICKET_ROUTES),
-  },
-  {
-    path: 'knowledge',
-    canActivate: [authGuard],
-    loadChildren: () =>
-      import('./features/knowledge/knowledge.routes').then(m => m.KNOWLEDGE_ROUTES),
+    loadComponent: () =>
+      import('./core/layout/shell/shell').then(m => m.ShellPage),
+    children: [
+      {
+        path: 'inbox',
+        loadComponent: () =>
+          import('./features/inbox/inbox').then(m => m.InboxPage),
+      },
+      {
+        path: 'tickets',
+        loadComponent: () =>
+          import('./features/tickets/tickets').then(m => m.TicketsPage),
+      },
+      {
+        path: 'tickets/:id',
+        loadComponent: () =>
+          import('./features/ticket-detail/ticket-detail').then(m => m.TicketDetailPage),
+      },
+      {
+        path: 'knowledge',
+        loadComponent: () =>
+          import('./features/knowledge/knowledge').then(m => m.KnowledgePage),
+      },
+      {
+        path: 'dashboard',
+        canActivate: [roleGuard(['admin', 'super_admin'])],
+        loadComponent: () =>
+          import('./features/dashboard/dashboard').then(m => m.DashboardPage),
+      },
+      {
+        path: 'team',
+        canActivate: [roleGuard(['admin', 'super_admin'])],
+        loadComponent: () =>
+          import('./features/team/team').then(m => m.TeamPage),
+      },
+      {
+        path: 'settings',
+        canActivate: [roleGuard(['admin', 'super_admin'])],
+        loadComponent: () =>
+          import('./features/settings/settings').then(m => m.SettingsPage),
+      },
+      {
+        path: 'super-admin',
+        canActivate: [roleGuard(['super_admin'])],
+        loadComponent: () =>
+          import('./features/super-admin/super-admin').then(m => m.SuperAdminPage),
+      },
+    ],
   },
 
-  {
-    path: 'dashboard',
-    canActivate: [authGuard, roleGuard(['manager', 'admin', 'super_admin'])],
-    loadChildren: () =>
-      import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES),
-  },
-
-  {
-    path: 'settings',
-    canActivate: [authGuard, roleGuard(['admin', 'super_admin'])],
-    loadChildren: () =>
-      import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES),
-  },
-
-  {
-    path: 'super-admin',
-    canActivate: [authGuard, roleGuard(['super_admin'])],
-    loadChildren: () =>
-      import('./features/super-admin/super-admin.routes').then(m => m.SUPER_ADMIN_ROUTES),
-  },
-
-  { path: '**', redirectTo: 'auth/login' },
+  // Catch-all
+  { path: '**', redirectTo: 'inbox' },
 ];
