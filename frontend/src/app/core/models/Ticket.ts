@@ -1,5 +1,10 @@
 import { SourceChannel } from ".";
 import { AiTriage } from "./AiTriage";
+import { TicketStatus } from "./index";
+import { TicketPriority } from "./index";
+import { TicketCategory } from "./index";
+import { User } from "./User";
+import { TicketMessage } from "./TicketMessage";
 
 export interface Ticket {
   id: string;

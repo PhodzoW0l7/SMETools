@@ -1,4 +1,4 @@
-import { MessageDirection } from ".";
+import { MessageDirection, MessageChannel } from "./index";
 import { User } from "./User";
 
 export interface TicketMessage {

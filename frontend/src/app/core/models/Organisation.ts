@@ -1,3 +1,4 @@
+import { OrgMode } from "./index";
 
 export interface Organisation {
   id: string;

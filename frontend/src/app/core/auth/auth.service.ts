@@ -2,14 +2,12 @@ import { Injectable, computed, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Supabase } from '../supabase';
 import { AuthChangeEvent } from '@supabase/supabase-js';
-import {
-  AuthSession, Organisation,
-  RegisterOrgDto, InviteUserDto, UserRole
-} from '../models';
+import { 
+  AuthSession, Organisation, RegisterOrgDto, InviteUserDto, UserRole } from '../models/index';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private supabase = inject(Supabase);
+  private supabase = inject(Supabase); 
   private router   = inject(Router);
 
   private _session = signal<AuthSession | null>(null);
@@ -21,12 +19,11 @@ export class AuthService {
   readonly role       = computed(() => this._session()?.user.role ?? null);
 
   readonly isAdmin      = computed(() => ['admin', 'super_admin'].includes(this.role() ?? ''));
-  readonly isManager    = computed(() => ['manager', 'admin', 'super_admin'].includes(this.role() ?? ''));
   readonly isSuperAdmin = computed(() => this.role() === 'super_admin');
 
   constructor() {
-    // Single call each — no duplicates
     this.listenToAuthChanges();
+    // Restore session on app init (no navigation — user is already on their page)
     setTimeout(() => this.restoreSession(), 0);
   }
 
@@ -57,13 +54,12 @@ export class AuthService {
   }
 
   // ── Login ─────────────────────────────────────────────────
-  // signInWithPassword → onAuthStateChange fires SIGNED_IN
-  // → loadSession() → navigates based on role
   async login(email: string, password: string): Promise<void> {
     const { error } = await this.supabase.client.auth
       .signInWithPassword({ email, password });
 
     if (error) throw new Error(error.message);
+    // onAuthStateChange SIGNED_IN will fire → loadSession() → navigate
   }
 
   // ── OAuth ─────────────────────────────────────────────────
@@ -118,11 +114,10 @@ export class AuthService {
     if (error) throw new Error(error.message);
   }
 
-  // ── Load session ──────────────────────────────────────────
+  // ── Load session + navigate (called on SIGNED_IN only) ────
   private async loadSession(): Promise<void> {
     try {
       const { data: { user: authUser } } = await this.supabase.client.auth.getUser();
-      console.log('[Auth] loadSession — authUser:', authUser?.id ?? 'none');
       if (!authUser) return;
 
       const { data: profile, error } = await this.supabase.client
@@ -130,9 +125,6 @@ export class AuthService {
         .select('*, organisations(*)')
         .eq('id', authUser.id)
         .single();
-
-      console.log('[Auth] profile:', profile);
-      console.log('[Auth] profile error:', error);
 
       if (error || !profile) return;
 
@@ -143,42 +135,68 @@ export class AuthService {
         organisation: p.organisations,
       });
 
-      // Role-based navigation
-      console.log('[Auth] role:', p.role);
-      switch (p.role) {
-        case 'super_admin':
-          await this.router.navigate(['/super-admin']);
-          break;
-        case 'admin':
-        case 'manager':
-          await this.router.navigate(['/dashboard']);
-          break;
-        default:
-          await this.router.navigate(['/inbox']);
-      }
+      // Navigate based on role (only called after explicit login)
+      this.navigateByRole(p.role);
 
     } catch (e) {
-      console.error('[Auth] loadSession threw:', e);
+      console.error('[Auth] loadSession error:', e);
     }
   }
 
-  // ── Restore on app init ───────────────────────────────────
+  // ── Restore session WITHOUT navigation (page refresh) ─────
   private async restoreSession(): Promise<void> {
     const { data: { session } } = await this.supabase.client.auth.getSession();
-    console.log('[Auth] restoreSession — has session:', !!session);
-    if (session) await this.loadSession();
+    if (!session) return;
+
+    // Just load the session data, don't navigate
+    try {
+      const { data: { user: authUser } } = await this.supabase.client.auth.getUser();
+      if (!authUser) return;
+
+      const { data: profile, error } = await this.supabase.client
+        .from('users')
+        .select('*, organisations(*)')
+        .eq('id', authUser.id)
+        .single();
+
+      if (error || !profile) return;
+
+      const p = profile as any;
+      this._session.set({
+        user:         { ...p, email: authUser.email },
+        organisation: p.organisations,
+      });
+    } catch (e) {
+      console.error('[Auth] restoreSession error:', e);
+    }
   }
 
   // ── Auth state listener ───────────────────────────────────
   private listenToAuthChanges(): void {
     this.supabase.client.auth.onAuthStateChange(async (event: AuthChangeEvent) => {
-      console.log('[Auth] event:', event);
       if (event === 'SIGNED_IN') {
-        await this.loadSession();
+        await this.loadSession(); // This navigates
       }
       if (event === 'SIGNED_OUT') {
         this._session.set(null);
       }
+      if (event === 'USER_UPDATED') {
+        await this.restoreSession(); // Password update, etc. — no nav
+      }
     });
+  }
+
+  // ── Role-based navigation ─────────────────────────────────
+  private navigateByRole(role: string): void {
+    switch (role) {
+      case 'super_admin':
+        this.router.navigate(['/super-admin']);
+        break;
+      case 'admin':
+        this.router.navigate(['/dashboard']);
+        break;
+      default:
+        this.router.navigate(['/inbox']);
+    }
   }
 }

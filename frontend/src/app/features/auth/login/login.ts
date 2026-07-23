@@ -152,24 +152,23 @@ export class LoginComponent {
     });
   }
 
-  async onSubmit(): Promise<void> {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+async onSubmit(): Promise<void> {
+  if (this.form.invalid) { this.form.markAllAsTouched(); return; }
 
-    this.loading.set(true);
-    this.errorMessage.set('');
+  this.loading.set(true);
+  this.errorMessage.set('');
 
-    try {
-      await this.auth.login(
-        this.form.value.email,
-        this.form.value.password
-      );
-      await this.router.navigate(['/inbox']); 
-    } catch (err: any) {
-      // Only reaches here if signInWithPassword itself fails (wrong password etc)
-      this.errorMessage.set(err.message ?? 'Login failed. Please try again.');
-      this.loading.set(false);  // Reset only on error — success navigates away
-    }
+  try {
+    await this.auth.login(
+      this.form.value.email,
+      this.form.value.password
+    );
+    // Navigation happens automatically via onAuthStateChange → loadSession()
+  } catch (err: any) {
+    this.errorMessage.set(err.message ?? 'Login failed. Please try again.');
+    this.loading.set(false);
   }
+}
 
   async loginWithGoogle(): Promise<void> {
     try {
