@@ -5,7 +5,7 @@ export const AUTH_ROUTES: Routes = [
   {
     path: 'login',
     loadComponent: () =>
-      import('../../features/auth/login/login').then(m => m.LoginComponent),
+      import('../../features/auth/login/login').then(m => m.Login),
   },
   {
     path: 'register',
@@ -16,11 +16,6 @@ export const AUTH_ROUTES: Routes = [
     path: 'reset-password',
     loadComponent: () =>
       import('../../features/auth/reset-password/reset-password').then(m => m.ResetPasswordComponent),
-  },
-  {
-    path: 'callback',
-    loadComponent: () =>
-      import('../../features/auth/callback/callback').then(m => m.CallbackComponent),
   },
 ];
  
