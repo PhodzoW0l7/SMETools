@@ -1,1 +1,105 @@
-<p>dashboard works!</p>
+<div class="dashboard-grid">
+  
+  <!-- Metric Card Row Matrices -->
+  <section class="metrics-row">
+    <div class="metric-card">
+      <div class="card-label">Open tickets</div>
+      <div class="card-value">{{ totalOpenCount() }}</div>
+      <div class="card-trend upward"><i class="ti-arrow-down"></i> 3 from yesterday</div>
+    </div>
+    
+    <div class="metric-card urgent">
+      <div class="card-label">Urgent</div>
+      <div class="card-value red-text">{{ urgentCount() }}</div>
+      <div class="card-trend warning">needs attention</div>
+    </div>
+    
+    <div class="metric-card">
+      <div class="card-label">Resolved today</div>
+      <div class="card-value green-text">{{ resolvedCount() }}</div>
+      <div class="card-trend passive">of 15 target</div>
+    </div>
+    
+    <div class="metric-card">
+      <div class="card-label">Avg response</div>
+      <div class="card-value">{{ avgResponseTime() }}</div>
+      <div class="card-trend passive">SLA target: 2h</div>
+    </div>
+  </section>
+
+  <!-- Analytical Visual Charts Section Block -->
+  <section class="analytics-block">
+    <div class="chart-card main-volume">
+      <h3 class="chart-title">Ticket volume — last 7 days</h3>
+      <div class="bar-chart-container">
+        @for (bar of volumeHistory(); track bar.day) {
+          <div class="bar-column-wrapper">
+            <div class="bar-track">
+              <div class="bar-fill" [style.height.%]="(bar.count / 30) * 100"></div>
+            </div>
+            <span class="bar-label">{{ bar.day }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="chart-card channel-split">
+      <h3 class="chart-title">By channel</h3>
+      <div class="donut-chart-view">
+        <div class="mock-donut"></div>
+        <div class="legend-list">
+          @for (item of channelMetrics(); track item.name) {
+            <div class="legend-item">
+              <span class="legend-dot" [ngClass]="item.color"></span>
+              <span class="legend-text">{{ item.name }} {{ item.percentage }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Operational Submissions Data Grid Table -->
+  <section class="data-table-card">
+    <div class="table-header">
+      <h3 class="table-title">Recent tickets</h3>
+      <a routerLink="/tickets" class="view-all-link">View all &rarr;</a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="tickets-table">
+        <thead>
+          <tr>
+            <th>REF</th>
+            <th>SUBJECT</th>
+            <th>STATUS</th>
+            <th>PRIORITY</th>
+            <th>CHANNEL</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ticket of recentTickets(); track ticket.ticket_ref) {
+            <tr>
+              <td class="ref-col">{{ ticket.ticket_ref }}</td>
+              <td class="subject-col">{{ ticket.subject }}</td>
+              <td>
+                <span class="badge status-badge" [ngClass]="getStatusClass(ticket.status)">
+                  {{ ticket.status?.replace('_', ' ') }}
+                </span>
+              </td>
+              <td>
+                <span class="badge priority-badge" [ngClass]="getPriorityClass(ticket.priority)">
+                  {{ ticket.priority }}
+                </span>
+              </td>
+              <td class="channel-col">
+                <i class="channel-icon" [ngClass]="ticket.source === 'email' ? 'ti-mail' : ticket.source === 'whatsapp' ? 'ti-brand-whatsapp' : 'ti-file-text'"></i>
+                {{ ticket.source === 'web_form' ? 'form' : ticket.source }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

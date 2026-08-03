@@ -66,3 +66,19 @@ input:focus {
   --color-text-danger:        #b91c1c;
   --color-border-danger:      #fca5a5;
 }
+
+/* Universal sizing for the brand logo */
+.brand-img {
+  height: 142px;         /* Keeps it small and proportional */
+  width: auto;          /* Prevents stretching */
+  object-fit: contain;  /* Ensures crisp scaling */
+}
+
+/* Optional: Ensures the container aligns items perfectly */
+.sidebar-brand, 
+.login-brand, 
+.register-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;            /* Puts clean spacing between logo and text */
+}

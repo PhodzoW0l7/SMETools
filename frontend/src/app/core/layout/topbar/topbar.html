@@ -1,1 +1,20 @@
-<p>topbar works!</p>
+<header class="topbar">
+  <h1 class="page-title">{{ pageTitle() }}</h1>
+  
+  <div class="topbar-actions">
+    <div class="search-wrapper">
+      <i class="ti-search search-icon"></i>
+      <input type="text" placeholder="Search tickets..." class="search-input" />
+    </div>
+    
+    <button class="action-trigger alert-bell" title="Notifications">
+      <span class="notification-indicator"></span>
+    </button>
+    
+    <div class="user-badge-mini">JD</div>
+
+  <button class="action-trigger logout-trigger" (click)="onLogout()" title="Sign Out">
+      <i class="ti-logout"></i>
+    </button>
+  </div>
+</header>

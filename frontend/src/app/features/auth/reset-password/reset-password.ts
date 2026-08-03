@@ -15,7 +15,7 @@ import { AuthChangeEvent } from '@supabase/supabase-js';
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     
   `,

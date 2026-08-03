@@ -1,87 +1,138 @@
-<!-- <div class="auth-layout">
-      <div class="auth-card">
+<div class="auth-layout">
+  <div class="auth-card">
 
-        @if (!submitted()) {
-          <div style="margin-bottom: 1.5rem; text-align: center;">
-      <img 
-        src="logo.png" 
-        alt="Logo" 
-        style="height: 200px; width: auto; display: inline-block;" 
-      />
-    </div>
-          <h1>Register your organisation</h1>
-          <p class="subtitle">Set up your workspace in under a minute</p>
+    @if (!submitted()) {
 
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
-
-            <p class="section-label">Your organisation</p>
-
-            <div class="field">
-              <label>Company name</label>
-              <input type="text" formControlName="org_name"
-                     placeholder="Acme Corp"
-                     (blur)="autoFillSlug()" />
-            </div>
-
-            <div class="field">
-              <label>Workspace URL</label>
-              <div class="input-prefix">
-                <span>supportdesk.io/</span>
-                <input type="text" formControlName="org_slug" placeholder="acme-corp" />
-              </div>
-              @if (form.get('org_slug')?.errors?.['pattern']) {
-                <span class="error">Lowercase letters, numbers and hyphens only</span>
-              }
-            </div>
-
-            <p class="section-label">Your account</p>
-
-            <div class="field">
-              <label>Full name</label>
-              <input type="text" formControlName="full_name" placeholder="Jane Smith" />
-            </div>
-
-            <div class="field">
-              <label>Work email</label>
-              <input type="email" formControlName="email" placeholder="jane@acme.com" />
-            </div>
-
-            <div class="field">
-              <label>Password</label>
-              <input type="password" formControlName="password" placeholder="At least 8 characters" />
-            </div>
-
-            <div class="field">
-              <label>Confirm password</label>
-              <input type="password" formControlName="confirm_password" placeholder="••••••••" />
-              @if (form.errors?.['passwordMismatch'] && form.get('confirm_password')?.touched) {
-                <span class="error">Passwords do not match</span>
-              }
-            </div>
-
-            @if (errorMessage()) {
-              <p class="error-banner">{{ errorMessage() }}</p>
-            }
-
-            <button type="submit" class="btn-primary" [disabled]="loading()">
-              {{ loading() ? 'Creating workspace…' : 'Create workspace' }}
-            </button>
-
-          </form>
-
-          <p class="switch-link">
-            Already have an account? <a routerLink="/auth/login">Sign in</a>
-          </p>
-        }
-
-        @if (submitted()) {
-          <div class="success-state">
-            <div class="success-icon">✓</div>
-            <h2>Check your email</h2>
-            <p>We've sent a confirmation link to <strong>{{ form.value.email }}</strong>. Click it to activate your account and get started.</p>
-            <a routerLink="/auth/login" class="btn-primary" style="display:block;text-align:center;text-decoration:none">Back to login</a>
-          </div>
-        }
-
+      <div class="logo-wrap">
+        <img src="logo.png" alt="intersecmail logo" class="logo-img" />
       </div>
-    </div> -->
+
+      <h1 class="card-title">Register your organisation</h1>
+      <p class="card-subtitle">Set up your workspace in under a minute</p>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <p class="section-label">Your organisation</p>
+
+        <div class="field">
+          <label for="org_name">Company name</label>
+          <input
+            id="org_name"
+            type="text"
+            formControlName="org_name"
+            placeholder="Acme Corp"
+            (blur)="autoFillSlug()"
+          />
+          @if (form.get('org_name')?.invalid && form.get('org_name')?.touched) {
+            <span class="field-error">Company name is required</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="org_slug">Workspace URL</label>
+          <div class="input-prefix">
+            <span class="prefix-text">intersecmail.io/</span>
+            <input
+              id="org_slug"
+              type="text"
+              formControlName="org_slug"
+              placeholder="acme-corp"
+            />
+          </div>
+          @if (form.get('org_slug')?.errors?.['pattern'] && form.get('org_slug')?.touched) {
+            <span class="field-error">Lowercase letters, numbers and hyphens only</span>
+          }
+        </div>
+
+        <p class="section-label">Your account</p>
+
+        <div class="field">
+          <label for="full_name">Full name</label>
+          <input
+            id="full_name"
+            type="text"
+            formControlName="full_name"
+            placeholder="Jane Smith"
+            autocomplete="name"
+          />
+          @if (form.get('full_name')?.invalid && form.get('full_name')?.touched) {
+            <span class="field-error">Full name is required</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="email">Work email</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="jane@acme.com"
+            autocomplete="email"
+          />
+          @if (form.get('email')?.invalid && form.get('email')?.touched) {
+            <span class="field-error">Enter a valid email address</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="At least 8 characters"
+            autocomplete="new-password"
+          />
+          @if (form.get('password')?.errors?.['minlength'] && form.get('password')?.touched) {
+            <span class="field-error">Password must be at least 8 characters</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="confirm_password">Confirm password</label>
+          <input
+            id="confirm_password"
+            type="password"
+            formControlName="confirm_password"
+            placeholder="••••••••"
+            autocomplete="new-password"
+          />
+          @if (form.errors?.['passwordMismatch'] && form.get('confirm_password')?.touched) {
+            <span class="field-error">Passwords do not match</span>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <div class="error-banner" role="alert">{{ errorMessage() }}</div>
+        }
+
+        <button type="submit" class="btn-primary" [disabled]="loading()">
+          {{ loading() ? 'Creating workspace…' : 'Create workspace' }}
+        </button>
+
+      </form>
+
+      <p class="switch-link">
+        Already have an account?
+        <a routerLink="/auth/login">Sign in</a>
+      </p>
+
+    }
+
+    @if (submitted()) {
+      <div class="success-state">
+        <div class="success-icon" aria-hidden="true">✓</div>
+        <h2>Check your email</h2>
+        <p>
+          We've sent a confirmation link to
+          <strong>{{ form.value.email }}</strong>.
+          Click it to activate your account and get started.
+        </p>
+        <a routerLink="/auth/login" class="btn-primary success-btn">
+          Back to login
+        </a>
+      </div>
+    }
+
+  </div>
+</div>

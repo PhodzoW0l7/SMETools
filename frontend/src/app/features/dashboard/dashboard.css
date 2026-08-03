@@ -1,0 +1,226 @@
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.metric-card {
+  background-color: #ffffff;
+  border: 1px solid #eae9e6;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.card-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 8px 0;
+}
+
+.red-text { color: #dc2626; }
+.green-text { color: #10b981; }
+
+.card-trend {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+.card-trend.upward { color: #10b981; }
+.card-trend.warning { color: #f59e0b; }
+
+.analytics-block {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.chart-card {
+  background-color: #ffffff;
+  border: 1px solid #eae9e6;
+  border-radius: 12px;
+  padding: 24px;
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.bar-chart-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.bar-column-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 40px;
+}
+
+.bar-track {
+  width: 24px;
+  height: 180px;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-fill {
+  width: 100%;
+  background-color: #dbeafe;
+  position: absolute;
+  bottom: 0;
+  border-radius: 4px;
+  transition: height 0.5s ease;
+}
+
+.bar-column-wrapper:nth-child(4) .bar-fill {
+  background-color: #3b82f6; /* Emphasize Thursday peaked usage values */
+}
+
+.bar-label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.donut-chart-view {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex: 1;
+}
+
+.mock-donut {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 16px solid #3b82f6;
+  border-top-color: #6366f1;
+  border-right-color: #f59e0b;
+  transform: rotate(45deg);
+}
+
+.legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.bg-blue-600 { background-color: #3b82f6; }
+.bg-indigo-500 { background-color: #6366f1; }
+.bg-amber-500 { background-color: #f59e0b; }
+
+.data-table-card {
+  background-color: #ffffff;
+  border: 1px solid #eae9e6;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.table-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.view-all-link {
+  font-size: 0.85rem;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.tickets-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tickets-table th {
+  padding: 12px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 600;
+  border-bottom: 1px solid #f3f4f6;
+  text-transform: uppercase;
+}
+
+.tickets-table td {
+  padding: 16px 12px;
+  font-size: 0.875rem;
+  color: #111827;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ref-col { color: #2563eb; font-weight: 500; }
+.subject-col { font-weight: 500; }
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  display: inline-block;
+}
+
+.status-badge.bg-orange-50 { background-color: #fff7ed; color: #c2410c; }
+.status-badge.bg-blue-50 { background-color: #eff6ff; color: #1d4ed8; }
+.status-badge.bg-emerald-50 { background-color: #ecfdf5; color: #047857; }
+
+.priority-badge.bg-red-50 { background-color: #fef2f2; color: #b91c1c; }
+.priority-badge.bg-amber-50 { background-color: #fffbeb; color: #b45309; }
+.priority-badge.bg-slate-50 { background-color: #f9fafb; color: #4b5563; }
+
+.channel-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #4b5563;
+  text-transform: capitalize;
+}

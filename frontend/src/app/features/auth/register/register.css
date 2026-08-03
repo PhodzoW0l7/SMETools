@@ -82,3 +82,16 @@
       margin: 0 auto 1rem;
     }
     .success-state p { font-size: 14px; color: var(--color-text-secondary); margin: 0 0 1.5rem; line-height: 1.6; }
+    /* Container to center and space out the logo */
+.logo-wrap {
+  display: flex;
+  justify-content: center; /* Centers the logo horizontally */
+  margin-bottom: 1.5rem;   /* Spacing between logo and "Register your organisation" */
+}
+
+/* Explicit scaling rules for the logo image */
+.logo-img {
+  height: 200px;            /* Forces a perfect, compact height */
+  width: auto;             /* Maintains the logo's original aspect ratio */
+  object-fit: contain;     /* Prevents stretching or distortion */
+}

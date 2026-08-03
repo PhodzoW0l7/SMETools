@@ -63,4 +63,16 @@
     }
     .switch-link { font-size: 12px; color: var(--color-text-tertiary); text-align: center; margin: 0; }
     .switch-link a { color: var(--color-text-info); text-decoration: none; }
-  
+  /* Container to center and space out the logo */
+.logo-wrap {
+  display: flex;
+  justify-content: center; /* Centers the logo horizontally */
+  margin-bottom: 1.5rem;   /* Spacing between logo and "Register your organisation" */
+}
+
+/* Explicit scaling rules for the logo image */
+.logo-img {
+  height: 200px;            /* Forces a perfect, compact height */
+  width: auto;             /* Maintains the logo's original aspect ratio */
+  object-fit: contain;     /* Prevents stretching or distortion */
+}

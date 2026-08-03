@@ -7,7 +7,8 @@ import { Ticket } from '../../core/models/index';
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './dashboard.html'
+  templateUrl: './dashboard.html',
+  styleUrl: './dashboard.css'
 })
 export class Dashboard implements OnInit {
   private supabase = inject(Supabase);
