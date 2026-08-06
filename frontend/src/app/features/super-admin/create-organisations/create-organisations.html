@@ -1,0 +1,163 @@
+@if (!success()) {
+
+<div class="logo-wrap">
+    <img src="logo.png"
+         class="logo-img">
+</div>
+
+<h1>Create organisation</h1>
+
+<p class="subtitle">
+Create a new customer workspace and assign its first manager.
+</p>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+
+    <p class="section-label">
+
+        Organisation
+
+    </p>
+
+    <div class="field">
+
+        <label>
+
+            Organisation name
+
+        </label>
+
+        <input
+            formControlName="organisationName"
+            (blur)="autoFillSlug()">
+
+    </div>
+
+    <div class="field">
+
+        <label>
+
+            Workspace URL
+
+        </label>
+
+        <div class="input-prefix">
+
+            <span>
+                intersecmail.io/
+            </span>
+
+            <input
+                formControlName="workspaceSlug">
+
+        </div>
+
+    </div>
+
+    <p class="section-label">
+
+        Manager
+
+    </p>
+
+    <div class="field">
+
+        <label>
+
+            Manager name
+
+        </label>
+
+        <input
+            formControlName="managerName">
+
+    </div>
+
+    <div class="field">
+
+        <label>
+
+            Manager email
+
+        </label>
+
+        <input
+            type="email"
+            formControlName="managerEmail">
+
+    </div>
+
+    <div class="field">
+
+        <label>
+
+            Plan
+
+        </label>
+
+        <select formControlName="plan">
+
+            <option>
+                Starter
+            </option>
+
+            <option>
+                Professional
+            </option>
+
+            <option>
+                Enterprise
+            </option>
+
+        </select>
+
+    </div>
+
+    @if(errorMessage()){
+
+        <div class="error-banner">
+
+            {{errorMessage()}}
+
+        </div>
+
+    }
+
+    <button
+        class="btn-primary"
+        [disabled]="loading()">
+
+        {{ loading()
+            ? 'Creating...'
+            : 'Create Organisation' }}
+
+    </button>
+
+</form>
+
+}
+@else {
+
+<div class="success-state">
+
+    <div class="success-icon">
+
+        ✓
+
+    </div>
+
+    <h2>
+
+        Organisation created
+
+    </h2>
+
+    <p>
+
+        The manager invitation has been prepared.
+
+    </p>
+
+</div>
+
+}

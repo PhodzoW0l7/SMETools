@@ -62,31 +62,6 @@ export class AuthService {
     });
   }
 
-  // ── RESTORED: Register Organisation Method ──
-  async registerOrganisation(dto: RegisterOrgDto): Promise<void> {
-    const { data: org, error: orgError } = await this.supabase.client
-      .rpc('create_organisation', {
-        org_name: dto.org_name,
-        org_slug: dto.org_slug,
-      });
-
-    if (orgError) throw new Error(orgError.message);
-
-    const { error: authError } = await this.supabase.client.auth.signUp({
-      email:    dto.email,
-      password: dto.password,
-      options: {
-        data: {
-          org_id:    (org as any).id,
-          full_name: dto.full_name,
-          role:      'admin',
-        },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (authError) throw new Error(authError.message);
-  }
 
   async login(email: string, password: string): Promise<void> {
     const { data, error } = await this.supabase.client.auth.signInWithPassword({ email, password });

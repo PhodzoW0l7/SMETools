@@ -1,98 +1,67 @@
-// ============================================================
-// reset-password.component.ts
-// Step 1: user enters email → receives magic link
-// Step 2: user clicks link → lands here → sets new password
-// ============================================================
-
-import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
-import { Supabase } from '../../../core/supabase';
-import { AuthChangeEvent } from '@supabase/supabase-js';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  template: `
-    
-  `,
-  styles: [`
-    
-  `]
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  templateUrl: './reset-password.html',
+  styleUrl: './reset-password.css',
 })
-export class ResetPasswordComponent implements OnInit, OnDestroy {
-  private fb = inject(FormBuilder);
-  private auth = inject(AuthService);
-  private supabase = inject(Supabase);
-  private router = inject(Router);
+export class ResetPassword {
+  private formBuilder=inject(FormBuilder);
+  private auth=inject(AuthService);
+  private router=inject(Router);
 
-  requestForm!: FormGroup;
-  newPasswordForm!: FormGroup;
-  
-  loading = signal(false);
-  sent = signal(false);
-  isResetting = signal(false);
-  errorMessage = signal('');
+  form:FormGroup;
+  loading=signal(false);
+  errorMessage=signal('');
+  successMessage=signal('');
 
-  private authSubscription?: any;
-
-  ngOnInit(): void {
-    this.requestForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-    });
-
-    this.newPasswordForm = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      confirm_password: ['', Validators.required],
-    });
-
-    // Detect if user arrived via a password reset link
-    const { data } = this.supabase.client.auth.onAuthStateChange((event: AuthChangeEvent) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        this.isResetting.set(true);
-      }
-    });
-
-    this.authSubscription = data.subscription;
+  passwordMatchingValidator(control:AbstractControl):ValidationErrors |null{
+    const password=control.get('password')?.value;
+    const confirmPassword=control.get('confirmPassword')?.value;
+    
+    return password===confirmPassword ?null: {
+      mismatch:true
+    };
   }
 
-  ngOnDestroy(): void {
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
+  constructor(){
+    this.form=this.formBuilder.group({
+      password:['',[Validators.required,Validators.minLength(6)]],
+      confirmPassword:['',Validators.required]
+    },{
+      validators:this.passwordMatchingValidator
+    });
   }
 
-  async requestReset(): Promise<void> {
-    if (this.requestForm.invalid) return;
-    this.loading.set(true);
-    this.errorMessage.set('');
-    try {
-      await this.auth.requestPasswordReset(this.requestForm.value.email);
-      this.sent.set(true);
-    } catch (err: any) {
-      this.errorMessage.set(err.message || 'An error occurred.');
-    } finally {
-      this.loading.set(false);
-    }
-  }
-
-  async updatePassword(): Promise<void> {
-    const { password, confirm_password } = this.newPasswordForm.value;
-    if (password !== confirm_password) {
-      this.errorMessage.set('Passwords do not match');
+  async onSubmit():Promise<void>{
+    if(this.form.invalid){
+      this.form.markAllAsTouched();
       return;
     }
+
     this.loading.set(true);
-    try {
-      await this.auth.updatePassword(password);
-      this.router.navigate(['/inbox']);
-    } catch (err: any) {
-      this.errorMessage.set(err.message || 'Failed to update password.');
-    } finally {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+
+    try{
+      await this.auth.updatePassword(this.form.value.password);
+
+        this.successMessage.set('Password updated successfully! Redirecting...');
+      setTimeout(()=> {
+        this.router.navigate(['/dashboard']);
+      },2000);
+    }catch(err:any){
+      this.errorMessage.set(err.message ?? 'Failed to reset password. Try again')
+    }finally{
       this.loading.set(false);
     }
   }
+
 }

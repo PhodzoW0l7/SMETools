@@ -3,9 +3,6 @@ import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthService } from './auth.service';
 import { UserRole } from '../models/index';
 
-/**
- * 1. Auth Guard: Protects internal layout structure shell
- */
 export const authGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
   const router = inject(Router);
@@ -19,9 +16,6 @@ export const authGuard: CanActivateFn = async () => {
   return false;
 };
 
-/**
- * 2. Public Only Guard: Bounces active users away from login/register screens
- */
 export const publicOnlyGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
   const router = inject(Router);

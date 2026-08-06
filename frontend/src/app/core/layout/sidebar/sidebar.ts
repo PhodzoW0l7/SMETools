@@ -29,9 +29,10 @@ export class Sidebar {
   // Core nav — all roles see these
   coreNav: NavItem[] = [
     { label: 'Dashboard', route: '/dashboard', icon: 'ti-layout-dashboard' },
-    { label: 'Inbox',     route: '/inbox',     icon: 'ti-inbox',   badge: 12 },
+    { label: 'Inbox',     route: '/inbox',     icon: 'ti-inbox'},
     { label: 'Tickets',   route: '/tickets',   icon: 'ti-ticket' },
     { label: 'Knowledge', route: '/knowledge', icon: 'ti-book' },
+    
   ];
 
   // Admin nav — admin and super_admin only

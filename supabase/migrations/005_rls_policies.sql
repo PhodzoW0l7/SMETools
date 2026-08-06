@@ -3,11 +3,7 @@ ALTER TABLE users           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tickets         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ticket_messages ENABLE ROW LEVEL SECURITY;
 
--- ============================================================
--- HELPER FUNCTION
--- Returns the org_id from the current user's JWT claims.
--- Called in every RLS policy below.
--- ============================================================
+-- firsts chekcs users role
 CREATE OR REPLACE FUNCTION auth_org_id()
 RETURNS UUID AS $$
     SELECT (auth.jwt() ->> 'org_id')::UUID;
@@ -18,10 +14,7 @@ RETURNS TEXT AS $$
     SELECT auth.jwt() ->> 'user_role';
 $$ LANGUAGE sql STABLE;
 
--- ============================================================
--- organisations
 -- Users can only see their own org. Admins can update it.
--- ============================================================
 CREATE POLICY "users see own org"
     ON organisations FOR SELECT
     USING (id = auth_org_id());
@@ -30,11 +23,7 @@ CREATE POLICY "admins update own org"
     ON organisations FOR UPDATE
     USING (id = auth_org_id() AND auth_role() IN ('admin', 'super_admin'));
 
--- ============================================================
--- users
--- Users see everyone in their org.
 -- Only admins can insert (invite) or update roles.
--- ============================================================
 CREATE POLICY "users see teammates"
     ON users FOR SELECT
     USING (org_id = auth_org_id());
@@ -95,6 +84,7 @@ CREATE POLICY "agents insert messages"
             WHERE t.id = ticket_id AND t.org_id = auth_org_id()
         )
     );
+    
 CREATE OR REPLACE FUNCTION custom_access_token_hook(event JSONB)
 RETURNS JSONB AS $$
 DECLARE

@@ -1,0 +1,50 @@
+<div class="page">
+
+    <h1>Platform Administrator</h1>
+
+    <p class="subtitle">
+        Manage organisations and invitations.
+    </p>
+
+    <button
+        routerLink="/super-admin/create-organisation"
+        class="btn-primary">
+
+        + Create Organisation
+
+    </button>
+
+    <div class="stats">
+
+        <div class="card">
+            <h2>{{ organisations().length }}</h2>
+            <span>Organisations</span>
+        </div>
+
+    </div>
+
+    <div class="table">
+
+        @for(org of organisations(); track org.id){
+
+            <div class="organisation-row">
+
+                <strong>{{org.name}}</strong>
+
+                <span>
+                    {{org.slug}}
+                </span>
+
+            </div>
+
+        }
+
+        @empty {
+
+            <p>No organisations created yet.</p>
+
+        }
+
+    </div>
+
+</div>
