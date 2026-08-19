@@ -30,45 +30,62 @@ export class AuthService {
 
   private async initializeAuth(): Promise<void> {
     const { data: { session } } = await this.supabase.client.auth.getSession();
-    this.mapAndSetSession(session);
+    // Await the new async profile mapping
+    await this.mapAndSetSession(session);
 
-    this.supabase.client.auth.onAuthStateChange((event, currentSession) => {
-      this.mapAndSetSession(currentSession);
+    // Track state changes asynchronously
+    this.supabase.client.auth.onAuthStateChange(async (event, currentSession) => {
+      await this.mapAndSetSession(currentSession);
     });
 
     this.resolveReady();
   }
 
-  private mapAndSetSession(supabaseSession: any): void {
+  private async mapAndSetSession(supabaseSession: any): Promise<void> {
     if (!supabaseSession?.user) {
       this._session.set(null);
       return;
     }
 
-    const metadata = supabaseSession.user.user_metadata || {};
-    const userRole = String(metadata['role'] || 'agent').toLowerCase() as UserRole;
+    const authUser = supabaseSession.user;
+
+    // Fetch the updated profile details directly from your public schema
+    const { data: dbUser, error } = await this.supabase.client
+      .from('users')
+      .select('id, full_name, role, org_id, created_at, updated_at')
+      .eq('id', authUser.id)
+      .single();
+
+    if (error || !dbUser) {
+      console.error('Could not load user profile:', error);
+      this._session.set(null);
+      return;
+    }
 
     this._session.set({
       user: {
-        id: supabaseSession.user.id,
-        email: supabaseSession.user.email ?? '',
-        role: userRole,
-        full_name: metadata['full_name'] || '',
-        org_id: metadata['org_id'] || '',
-        created_at: supabaseSession.user.created_at || '',
-        updated_at: supabaseSession.user.updated_at || ''
+        id: dbUser.id,
+        email: authUser.email ?? '',
+        full_name: dbUser.full_name,
+        role: dbUser.role as UserRole,
+        org_id: dbUser.org_id ?? '',
+        created_at: dbUser.created_at,
+        updated_at: dbUser.updated_at
       },
-      organisation: metadata['org_id'] ? ({ id: metadata['org_id'] } as any) : null,
+
+      organisation: dbUser.org_id
+        ? ({ id: dbUser.org_id } as any)
+        : null
     });
   }
-
 
   async login(email: string, password: string): Promise<void> {
     const { data, error } = await this.supabase.client.auth.signInWithPassword({ email, password });
     if (error) throw new Error(error.message);
     
     if (data?.session) {
-      this.mapAndSetSession(data.session);
+      // Map user asynchronously post-login
+      await this.mapAndSetSession(data.session);
     }
   }
 
@@ -82,7 +99,6 @@ export class AuthService {
     if (error) throw new Error(error.message);
   }
 
-  // ── ADDED: Password Reset Methods for ResetPasswordComponent ──
   async requestPasswordReset(email: string): Promise<void> {
     const { error } = await this.supabase.client.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,

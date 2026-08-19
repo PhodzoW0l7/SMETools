@@ -6,7 +6,6 @@ export interface CreateOrganisationDto {
   workspaceSlug: string;
   managerName: string;
   managerEmail: string;
-  plan: string;
 }
 
 @Injectable({
@@ -25,7 +24,6 @@ export class OrganisationService {
         organisation_slug: dto.workspaceSlug,
         manager_name: dto.managerName,
         manager_email: dto.managerEmail,
-        organisation_plan: dto.plan
       }
     );
 

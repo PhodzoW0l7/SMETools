@@ -6,7 +6,7 @@ import {OrganisationService} from '../../../core/auth/organisation.service';
 
 @Component({
   selector: 'app-create-organisations',
-  imports: [],
+  imports: [CommonModule,ReactiveFormsModule],
   templateUrl: './create-organisations.html',
   styleUrl: './create-organisations.css',
 })
@@ -30,10 +30,7 @@ export class CreateOrganisations {
         managerEmail: [
             '',
             [Validators.required, Validators.email]
-        ],
-
-        plan: ['Starter']
-
+        ]
     });
 
     autoFillSlug() {

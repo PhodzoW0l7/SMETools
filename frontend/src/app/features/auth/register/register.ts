@@ -56,20 +56,20 @@ export class Register {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    try {
-      await this.auth.registerOrganisation({
-        org_name:  this.form.value.org_name,
-        org_slug:  this.form.value.org_slug,
-        full_name: this.form.value.full_name,
-        email:     this.form.value.email,
-        password:  this.form.value.password,
-      });
-      this.submitted.set(true);
-    } catch (err: any) {
-      this.errorMessage.set(err.message ?? 'Registration failed. Please try again.');
-    } finally {
-      this.loading.set(false);
-    }
+    // try {
+    //   await this.auth.registerOrganisation({
+    //     org_name:  this.form.value.org_name,
+    //     org_slug:  this.form.value.org_slug,
+    //     full_name: this.form.value.full_name,
+    //     email:     this.form.value.email,
+    //     password:  this.form.value.password,
+    //   });
+    //   this.submitted.set(true);
+    // } catch (err: any) {
+    //   this.errorMessage.set(err.message ?? 'Registration failed. Please try again.');
+    // } finally {
+    //   this.loading.set(false);
+    // }
   }
 
   private passwordMatchValidator(group: AbstractControl) {
