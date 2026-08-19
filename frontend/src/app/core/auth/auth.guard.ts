@@ -22,15 +22,21 @@ export const publicOnlyGuard: CanActivateFn = async () => {
 
   await auth.isReady;
 
-  if (!auth.isLoggedIn()) return true;
+  if (!auth.isLoggedIn()) {
+    return true;
+  }
 
-  // If already logged in, send them to their designated homepage lane
   const role = auth.role();
-  if (role === 'super_admin') await router.navigate(['/super-admin']);
-  else if (auth.isAdmin()) await router.navigate(['/dashboard']);
-  else await router.navigate(['/inbox']);
 
-  return false;
+  if (role === 'super_admin') {
+    return router.parseUrl('/super-admin/dashboard');
+  }
+
+  if (role === 'admin' || role === 'manager') {
+    return router.parseUrl('/dashboard');
+  }
+
+  return router.parseUrl('/inbox');
 };
 
 /**
@@ -42,22 +48,24 @@ export const roleGuard: CanActivateFn = async (route: ActivatedRouteSnapshot) =>
 
   await auth.isReady;
 
-  // Safety fallback check
   if (!auth.isLoggedIn()) {
-    await router.navigate(['/auth/login']);
-    return false;
+    return router.parseUrl('/auth/login');
   }
 
   const allowedRoles = (route.data['roles'] as UserRole[]) || [];
   const userRole = auth.role();
 
-  // FIX: If the user's role is in the allowed list, allow them through immediately!
-  if (userRole && allowedRoles.includes(userRole)) return true;
+  if (userRole && allowedRoles.includes(userRole)) {
+    return true;
+  }
 
-  // If they lack clearance for THIS specific sub-page, gently send them to their home base
-  if (userRole === 'super_admin') await router.navigate(['/super-admin']);
-  else if (auth.isAdmin()) await router.navigate(['/dashboard']);
-  else await router.navigate(['/inbox']);
+  if (userRole === 'super_admin') {
+    return router.parseUrl('/super-admin/dashboard');
+  }
 
-  return false;
+  if (userRole === 'admin' || userRole === 'manager') {
+    return router.parseUrl('/dashboard');
+  }
+
+  return router.parseUrl('/inbox');
 };
