@@ -7,7 +7,7 @@ export const authGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  await auth.isReady; // Ensure Supabase session check is complete
+  await auth.isReady; 
 
   if (auth.isLoggedIn()) return true;
 
@@ -26,23 +26,16 @@ export const publicOnlyGuard: CanActivateFn = async () => {
     return true;
   }
 
-  const role = auth.role();
-
-  if (role === 'super_admin') {
-    return router.parseUrl('/super-admin/dashboard');
-  }
-
-  if (role === 'admin' || role === 'manager') {
-    return router.parseUrl('/dashboard');
-  }
-
-  return router.parseUrl('/inbox');
+  return router.parseUrl(
+    auth.getHomeRoute()
+  );
 };
 
-/**
- * 3. Role Guard: Validates explicit permissions without forcing redirect loops
- */
-export const roleGuard: CanActivateFn = async (route: ActivatedRouteSnapshot) => {
+
+export const roleGuard: CanActivateFn = async (
+  route: ActivatedRouteSnapshot
+) => {
+
   const auth = inject(AuthService);
   const router = inject(Router);
 
@@ -52,20 +45,19 @@ export const roleGuard: CanActivateFn = async (route: ActivatedRouteSnapshot) =>
     return router.parseUrl('/auth/login');
   }
 
-  const allowedRoles = (route.data['roles'] as UserRole[]) || [];
+  const allowedRoles =
+    (route.data['roles'] as UserRole[]) || [];
+
   const userRole = auth.role();
 
-  if (userRole && allowedRoles.includes(userRole)) {
+  if (
+    userRole &&
+    allowedRoles.includes(userRole)
+  ) {
     return true;
   }
 
-  if (userRole === 'super_admin') {
-    return router.parseUrl('/super-admin/dashboard');
-  }
-
-  if (userRole === 'admin' || userRole === 'manager') {
-    return router.parseUrl('/dashboard');
-  }
-
-  return router.parseUrl('/inbox');
+  return router.parseUrl(
+    auth.getHomeRoute()
+  );
 };

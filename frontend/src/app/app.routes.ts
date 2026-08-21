@@ -1,63 +1,59 @@
 import { Routes } from '@angular/router';
-import { authGuard, publicOnlyGuard, roleGuard } from './core/auth/auth.guard';
+import {
+  authGuard,
+  publicOnlyGuard,
+  roleGuard
+} from './core/auth/auth.guard';
 
 export const routes: Routes = [
 
+  // PUBLIC AUTH ROUTES
   {
     path: 'auth',
-    canActivate: [publicOnlyGuard],
     loadChildren: () =>
       import('./features/auth/auth.routes')
         .then(m => m.AUTH_ROUTES),
   },
 
-  // SUPER ADMIN
-  {
-    path: 'super-admin',
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['super_admin'] },
-
-    children: [
-
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      },
-
-      {
-        path: 'dashboard',
-        loadComponent: () =>
-          import('./features/super-admin/super-dashboard/super-dashboard')
-            .then(m => m.SuperDashboard),
-      },
-
-      {
-        path: 'create-organisation',
-        loadComponent: () =>
-          import('./features/super-admin/create-organisations/create-organisations')
-            .then(m => m.CreateOrganisations),
-      },
-
-      {
-        path: 'organisations',
-        loadComponent: () =>
-          import('./features/super-admin/organisation-list/organisation-list')
-            .then(m => m.OrganisationList),
-      }
-    ],
-  },
-
-  // NORMAL APPLICATION
+  // PROTECTED SHELL
   {
     path: '',
     canActivate: [authGuard],
+
     loadComponent: () =>
       import('./core/layout/shell/shell')
         .then(m => m.shell),
 
     children: [
 
+      // SUPER ADMIN
+      {
+        path: 'super-admin',
+        canActivate: [roleGuard],
+        data: { roles: ['super_admin'] },
+
+        children: [
+          {
+            path: '',
+            redirectTo: 'dashboard',
+            pathMatch: 'full'
+          },
+          {
+            path: 'dashboard',
+            loadComponent: () =>
+              import('./features/super-admin/super-dashboard/super-dashboard')
+                .then(m => m.SuperDashboard),
+          },
+          {
+            path: 'organisations',
+            loadComponent: () =>
+              import('./features/super-admin/organisation-list/organisation-list')
+                .then(m => m.OrganisationList),
+          }
+        ]
+      },
+
+      // NORMAL APP
       {
         path: 'inbox',
         loadComponent: () =>
@@ -83,14 +79,16 @@ export const routes: Routes = [
     ]
   },
 
+  // ROOT
   {
     path: '',
-    redirectTo: 'dashboard',
+    redirectTo: 'auth/login',
     pathMatch: 'full'
   },
 
+  // FALLBACK
   {
     path: '**',
-    redirectTo: 'dashboard'
+    redirectTo: 'auth/login'
   }
 ];

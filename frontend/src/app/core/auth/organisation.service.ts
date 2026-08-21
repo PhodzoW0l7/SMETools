@@ -34,18 +34,51 @@ export class OrganisationService {
     return data;
   }
 
-  async getOrganisations() {
+async getOrganisations() {
+  const { data, error } = await this.supabase.client
+    .from('organisations')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    const { data, error } = await this.supabase.client
-      .from('organisations')
-      .select('*')
-      .order('created_at', { ascending: false });
+  console.log('Organisations query:', data, error);
 
-    if (error) {
-      throw new Error(error.message);
-    }
+  if (error) {
+    throw new Error(error.message);
+  }
 
-    return data;
+  return data ?? [];
+}
+
+  async getManagerCount():Promise<number>{
+    const {count,error}=await this.supabase.client
+    .from('users')
+    .select('*', { count: 'exact', head: true })
+    .eq('role', 'manager');
+
+    if(error) throw new Error(error.message);
+    return count ??0;
+  }
+
+  async getAgentCount(): Promise<number> {
+  const { count, error } = await this.supabase.client
+    .from('users')
+    .select('*', { count: 'exact', head: true })
+    .eq('role', 'agent');
+
+  if (error) throw new Error(error.message);
+
+  return count ?? 0;
+}
+
+  async getPendingInviteCount():Promise<number>{
+    const {count,error}=await this.supabase.client
+    .from('organisation_invites')
+    .select('*', { count: 'exact', head: true })
+    .eq('accepted', false);
+
+  if (error) throw new Error(error.message);
+
+  return count ?? 0;
   }
 
 }

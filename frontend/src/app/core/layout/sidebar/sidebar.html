@@ -1,13 +1,16 @@
 <aside class="sidebar">
   <div class="sidebar-brand">
-  <img src="logo.png" alt="intersecmail logo" class="brand-img">
-</div>
+    <img src="logo.png" alt="intersecmail logo" class="brand-img">
+  </div>
 
   <nav class="sidebar-nav">
-    <!-- Core Links Block -->
+    <!-- Dynamic Computed Links Block based on user role status -->
     <div class="nav-section">
-      @for (item of coreNav; track item.route) {
-        <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
+      @for (item of coreNav(); track item.route) {
+        <a [routerLink]="item.route" 
+           routerLinkActive="active" 
+           class="nav-item"
+           [class.specialty]="auth.isSuperAdmin()">
           <i [class]="item.icon"></i>
           <span class="nav-label">{{ item.label }}</span>
           @if (item.badge) {
@@ -16,45 +19,24 @@
         </a>
       }
     </div>
-
-    <!-- Admin Operations Links Block -->
-    @if (showAdminNav()) {
-      <div class="nav-section">
-        <div class="section-header">ADMIN</div>
-        @for (item of adminNav; track item.route) {
-          <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
-            <i [class]="item.icon"></i>
-            <span class="nav-label">{{ item.label }}</span>
-          </a>
-        }
-      </div>
-    }
-
-    <!-- Super Admin Domain Links Block -->
-    @if (showSuperNav()) {
-      <div class="nav-section">
-        <div class="section-header">SUPER ADMIN</div>
-        @for (item of superAdminNav; track item.route) {
-          <a [routerLink]="item.route" routerLinkActive="active" class="nav-item specialty">
-            <i [class]="item.icon"></i>
-            <span class="nav-label">{{ item.label }}</span>
-          </a>
-        }
-      </div>
-    }
   </nav>
 
-  <!-- Authenticated User Context Chassis Footer -->
-  <div class="sidebar-footer">
-    <div class="user-profile">
-      <div class="avatar">{{ userInitials() }}</div>
-      <div class="user-meta">
-        <div class="user-name">{{ userName() }}</div>
-        <div class="user-role">{{ userRole() }}</div>
+  <!-- Authenticated User Context Footer Chassis -->
+  <!-- Safely matching your auth.user() computed signal mapping -->
+  @if (auth.user(); as activeUser) {
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="avatar">
+          {{ activeUser.full_name ? activeUser.full_name.charAt(0).toUpperCase() : 'U' }}
+        </div>
+        <div class="user-meta">
+          <div class="user-name">{{ activeUser.full_name || 'User Profile' }}</div>
+          <div class="user-role">{{ auth.role() | titlecase }}</div>
+        </div>
       </div>
+      <button class="btn-logout" (click)="auth.logout()" title="Sign Out">
+        <i class="ti-logout"></i>
+      </button>
     </div>
-    <button class="btn-logout" (click)="logout()" title="Sign Out">
-      <i class="ti-logout"></i>
-    </button>
-  </div>
+  }
 </aside>

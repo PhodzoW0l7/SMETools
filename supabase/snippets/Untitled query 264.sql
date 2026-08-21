@@ -1,2 +1,1 @@
-SELECT id, full_name, role, org_id
-FROM public.users;
+GRANT SELECT ON public.organisations TO authenticated;

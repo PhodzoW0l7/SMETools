@@ -79,6 +79,19 @@ export class AuthService {
     });
   }
 
+  getHomeRoute(): string {
+  const role = this.role();
+
+  if (role === 'super_admin') {
+    return '/super-admin/dashboard';
+  }
+
+  if (role === 'admin' || role === 'manager') {
+    return '/dashboard';
+  }
+
+  return '/inbox';
+}
   async login(email: string, password: string): Promise<void> {
     const { data, error } = await this.supabase.client.auth.signInWithPassword({ email, password });
     if (error) throw new Error(error.message);

@@ -4,7 +4,7 @@ import { publicOnlyGuard } from '../../core/auth/auth.guard';
 export const AUTH_ROUTES: Routes = [
    {
     path: '',
-    redirectTo: 'auth/login',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {

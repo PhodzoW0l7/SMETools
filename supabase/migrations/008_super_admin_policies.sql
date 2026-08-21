@@ -33,10 +33,20 @@ REVOKE EXECUTE ON FUNCTION custom_access_token_hook FROM PUBLIC;
 ALTER TABLE users ALTER COLUMN role SET DEFAULT 'agent';
 
 -- 3. Super admin: full access to organisations
-DROP POLICY IF EXISTS "super admins see all organisations" ON organisations;
+DROP POLICY IF EXISTS "super admins see all organisations"
+ON public.organisations;
 CREATE POLICY "super admins see all organisations"
-    ON organisations FOR SELECT
-    USING (auth_role() = 'super_admin');
+ON public.organisations
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1
+    FROM public.users u
+    WHERE u.id = auth.uid()
+      AND u.role = 'super_admin'
+  )
+);
 
 DROP POLICY IF EXISTS "super admins insert organisations" ON organisations;
 CREATE POLICY "super admins insert organisations"

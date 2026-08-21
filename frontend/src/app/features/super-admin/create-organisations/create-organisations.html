@@ -1,163 +1,147 @@
-@if (!success()) {
+<div class="modal-backdrop" (click)="close.emit()">
 
-<div class="logo-wrap">
-    <img src="logo.png"
-         class="logo-img">
-</div>
+  <div class="modal-card" (click)="$event.stopPropagation()">
 
-<h1>Create organisation</h1>
+    <div class="modal-header">
+      <div>
+        <h2>Create organisation</h2>
+        <p>Create a workspace and assign its first manager.</p>
+      </div>
 
-<p class="subtitle">
-Create a new customer workspace and assign its first manager.
-</p>
-
-<!-- <form [formGroup]="form" (ngSubmit)="submit()"> -->
-
-    <p class="section-label">
-
-        Organisation
-
-    </p>
-
-    <div class="field">
-
-        <label>
-
-            Organisation name
-
-        </label>
-
-        <input
-            formControlName="organisationName"
-            (blur)="autoFillSlug()">
-
+      <button
+        type="button"
+        class="close-btn"
+        (click)="close.emit()"
+      >
+        ×
+      </button>
     </div>
 
-    <div class="field">
+    @if (!success()) {
 
-        <label>
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+      >
 
-            Workspace URL
+        <div class="field">
+          <label for="organisationName">Organisation name</label>
 
-        </label>
+          <input
+            id="organisationName"
+            type="text"
+            formControlName="organisationName"
+            placeholder="Acme Corp"
+            (blur)="autoFillSlug()"
+          />
 
-        <div class="input-prefix">
-
-            <span>
-                intersecmail.io/
+          @if (
+            form.get('organisationName')?.invalid &&
+            form.get('organisationName')?.touched
+          ) {
+            <span class="error">
+              Organisation name is required
             </span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="workspaceSlug">Workspace URL</label>
+
+          <div class="input-prefix">
+            <span>intersecmail.io/</span>
 
             <input
-                formControlName="workspaceSlug">
-
+              id="workspaceSlug"
+              type="text"
+              formControlName="workspaceSlug"
+              placeholder="acme-corp"
+            />
+          </div>
         </div>
 
-    </div>
+        <div class="section-title">
+          Manager details
+        </div>
 
-    <p class="section-label">
+        <div class="field">
+          <label for="managerName">Manager name</label>
 
-        Manager
+          <input
+            id="managerName"
+            type="text"
+            formControlName="managerName"
+            placeholder="Jane Smith"
+          />
+        </div>
 
-    </p>
+        <div class="field">
+          <label for="managerEmail">Manager email</label>
 
-    <div class="field">
-
-        <label>
-
-            Manager name
-
-        </label>
-
-        <input
-            formControlName="managerName">
-
-    </div>
-
-    <div class="field">
-
-        <label>
-
-            Manager email
-
-        </label>
-
-        <input
+          <input
+            id="managerEmail"
             type="email"
-            formControlName="managerEmail">
+            formControlName="managerEmail"
+            placeholder="jane@acme.com"
+          />
+        </div>
 
-    </div>
+        @if (errorMessage()) {
+          <div class="error-banner">
+            {{ errorMessage() }}
+          </div>
+        }
 
-    <div class="field">
+        <div class="modal-actions">
 
-        <label>
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="close.emit()"
+          >
+            Cancel
+          </button>
 
-            Plan
-
-        </label>
-
-        <select formControlName="plan">
-
-            <option>
-                Starter
-            </option>
-
-            <option>
-                Professional
-            </option>
-
-            <option>
-                Enterprise
-            </option>
-
-        </select>
-
-    </div>
-
-    @if(errorMessage()){
-
-        <div class="error-banner">
-
-            {{errorMessage()}}
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="loading()"
+          >
+            {{
+              loading()
+                ? 'Creating...'
+                : 'Create organisation'
+            }}
+          </button>
 
         </div>
+
+      </form>
 
     }
 
-    <button
-        class="btn-primary"
-        [disabled]="loading()">
+    @if (success()) {
 
-        {{ loading()
-            ? 'Creating...'
-            : 'Create Organisation' }}
+      <div class="success-state">
+        <div class="success-icon">✓</div>
 
-    </button>
+        <h3>Organisation created</h3>
 
-<!-- </form> -->
+        <p>
+          The organisation was created and a manager invitation was prepared.
+        </p>
 
-}
-@else {
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="close.emit()"
+        >
+          Done
+        </button>
+      </div>
 
-<div class="success-state">
+    }
 
-    <div class="success-icon">
-
-        ✓
-
-    </div>
-
-    <h2>
-
-        Organisation created
-
-    </h2>
-
-    <p>
-
-        The manager invitation has been prepared.
-
-    </p>
+  </div>
 
 </div>
-
-}

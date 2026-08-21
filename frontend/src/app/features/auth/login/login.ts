@@ -28,32 +28,37 @@ export class Login {
   }
 
   async onSubmit(): Promise<void> {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    this.loading.set(true);
-    this.errorMessage.set('');
-
-    try {
-      await this.auth.login(this.form.value.email, this.form.value.password);
-
-      const role = this.auth.role();
-      if (role === 'super_admin') {
-        await this.router.navigate(['/super-admin']);
-      } else if (this.auth.isAdmin()) {
-        await this.router.navigate(['/dashboard']);
-      } else {
-        await this.router.navigate(['/inbox']);
-      }
-
-    } catch (err: any) {
-      this.errorMessage.set(err.message ?? 'Authentication rejected. Please check your credentials.');
-    } finally {
-      this.loading.set(false);
-    }
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
   }
+
+  this.loading.set(true);
+  this.errorMessage.set('');
+
+  try {
+    await this.auth.login(
+      this.form.value.email,
+      this.form.value.password
+    );
+
+    await this.router.navigateByUrl(
+      this.auth.getHomeRoute()
+    );
+
+  } catch (err: any) {
+    this.errorMessage.set(
+      err.message ??
+      'Authentication rejected. Please check your credentials.'
+    );
+  } finally {
+    this.loading.set(false);
+  }
+  console.log('Logged in user:', this.auth.user());
+  console.log('Detected role:', this.auth.role());
+  console.log('Home route:', this.auth.getHomeRoute());
+}
+
 
   // ── FIXED: Google Login Method matching template binding ──
   async loginWithGoogle(): Promise<void> {
