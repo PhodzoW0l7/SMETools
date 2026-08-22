@@ -81,4 +81,53 @@ async getOrganisations() {
   return count ?? 0;
   }
 
+  async getOrganisationById(id: string) {
+
+  const { data, error } = await this.supabase.client
+    .from('organisations')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+async getOrganisationInvite(organisationId: string) {
+
+  const { data, error } = await this.supabase.client
+    .from('organisation_invites')
+    .select('*')
+    .eq('organisation_id', organisationId)
+    .eq('role', 'manager')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+
+async getOrganisationUsers(organisationId: string) {
+
+  const { data, error } = await this.supabase.client
+    .from('users')
+    .select('id, full_name, role, org_id, avatar_url, created_at')
+    .eq('org_id', organisationId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
+
 }

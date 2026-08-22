@@ -1,0 +1,329 @@
+.detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+}
+
+.back-link {
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.back-link:hover {
+  color: #7c3aed;
+}
+
+.organisation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 24px;
+
+  background: #ffffff;
+
+  border: 1px solid #eae9e6;
+  border-radius: 12px;
+}
+
+.org-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.org-avatar {
+  width: 56px;
+  height: 56px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: #f5f3ff;
+  color: #7c3aed;
+
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+
+  font-size: 0.68rem;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+
+  color: #7c3aed;
+}
+
+.organisation-header h1 {
+  margin: 0;
+
+  font-size: 1.5rem;
+  color: #111827;
+}
+
+.workspace {
+  margin: 4px 0 0;
+
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.status {
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.status.active {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.info-card {
+  padding: 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #eae9e6;
+  border-radius: 12px;
+}
+
+.info-label {
+  margin-bottom: 6px;
+
+  font-size: 0.74rem;
+  color: #9ca3af;
+}
+
+.info-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  color: #111827;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.content-card {
+  background: #ffffff;
+
+  border: 1px solid #eae9e6;
+  border-radius: 12px;
+
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 20px 24px;
+
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.card-header h2 {
+  margin: 0;
+
+  font-size: 1rem;
+  color: #111827;
+}
+
+.card-header p {
+  margin: 4px 0 0;
+
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.placeholder-state {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 24px;
+}
+
+.placeholder-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
+  background: #f5f3ff;
+  color: #7c3aed;
+
+  font-size: 1.1rem;
+}
+
+.placeholder-state strong {
+  display: block;
+
+  margin-bottom: 4px;
+
+  font-size: 0.85rem;
+  color: #111827;
+}
+
+.placeholder-state p {
+  margin: 0;
+
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.state-card {
+  padding: 24px;
+
+  background: #ffffff;
+
+  border: 1px solid #eae9e6;
+  border-radius: 12px;
+
+  color: #6b7280;
+}
+
+.error-banner {
+  padding: 12px 14px;
+
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+
+  background: #fef2f2;
+  color: #b91c1c;
+
+  font-size: 0.82rem;
+}
+
+@media (max-width: 900px) {
+  .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+
+  .organisation-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.back-link {
+  background: none;
+  border: none;
+  padding: 0;
+
+  color: #6b7280;
+  font-size: 0.82rem;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.back-link:hover {
+  color: #7c3aed;
+}
+
+.person-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 18px 24px;
+
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.person-row:last-child {
+  border-bottom: none;
+}
+
+.person-avatar {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #f5f3ff;
+  color: #7c3aed;
+
+  font-weight: 700;
+}
+
+.person-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  flex: 1;
+}
+
+.person-info strong {
+  font-size: 0.85rem;
+  color: #111827;
+}
+
+.person-info span {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.invite-status {
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.invite-status.pending {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.invite-status.expired {
+  background: #fef2f2;
+  color: #b91c1c;
+}

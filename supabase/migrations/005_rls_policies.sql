@@ -85,30 +85,52 @@ CREATE POLICY "agents insert messages"
         )
     );
     
-CREATE OR REPLACE FUNCTION custom_access_token_hook(event JSONB)
-RETURNS JSONB AS $$
+CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event JSONB)
+RETURNS JSONB
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
     claims      JSONB;
     user_org_id UUID;
     user_role   TEXT;
 BEGIN
-    claims = event->'claims';
+
+    claims := event->'claims';
 
     SELECT u.org_id, u.role
     INTO user_org_id, user_role
     FROM public.users u
     WHERE u.id = (event->>'user_id')::UUID;
 
+    -- Role must be added even when org_id is NULL
+    IF user_role IS NOT NULL THEN
+        claims := jsonb_set(
+            claims,
+            '{user_role}',
+            to_jsonb(user_role)
+        );
+    END IF;
+
+    -- Organisation claim only applies to tenant users
     IF user_org_id IS NOT NULL THEN
-        claims = jsonb_set(claims, '{org_id}',   to_jsonb(user_org_id::TEXT));
-        claims = jsonb_set(claims, '{user_role}', to_jsonb(user_role));
+        claims := jsonb_set(
+            claims,
+            '{org_id}',
+            to_jsonb(user_org_id::TEXT)
+        );
     END IF;
 
     RETURN jsonb_set(event, '{claims}', claims);
-END;
-$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
-GRANT EXECUTE ON FUNCTION custom_access_token_hook TO supabase_auth_admin;
+END;
+$$;
+
+GRANT EXECUTE
+ON FUNCTION public.custom_access_token_hook(JSONB)
+TO supabase_auth_admin;
 
 
 CREATE POLICY "anon can insert organisation on register"

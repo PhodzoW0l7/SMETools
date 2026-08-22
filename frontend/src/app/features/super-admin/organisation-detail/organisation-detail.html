@@ -1,0 +1,139 @@
+<div class="detail-page">
+  <div class="page-actions">
+    <button type="button" class="back-link" (click)="goBack()">
+      ← Back
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="state-card">
+      Loading organisation...
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="error-banner">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (!loading() && organisation()) {
+    <section class="organisation-header">
+      <div class="org-main">
+        <div class="org-avatar">
+          {{ organisation()?.name?.charAt(0)?.toUpperCase() ?? '' }}
+        </div>
+
+        <div>
+          <p class="eyebrow">Organisation</p>
+          <h1>{{ organisation()?.name }}</h1>
+          <p class="workspace">
+            intersecmail.io/{{ organisation()?.slug }}
+          </p>
+        </div>
+      </div>
+      <span class="status active">Active</span>
+    </section>
+
+    <section class="info-grid">
+      <div class="info-card">
+        <div class="info-label">Organisation name</div>
+        <div class="info-value">{{ organisation()?.name }}</div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-label">Workspace</div>
+        <div class="info-value">
+          intersecmail.io/{{ organisation()?.slug }}
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-label">Mode</div>
+        <div class="info-value capitalize">{{ organisation()?.mode }}</div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-label">Created</div>
+        <div class="info-value">
+          {{ organisation()?.created_at | date:'mediumDate' }}
+        </div>
+      </div>
+    </section>
+
+    <section class="content-card">
+      <div class="card-header">
+        <div>
+          <h2>Manager</h2>
+          <p>Manager responsible for this organisation.</p>
+        </div>
+      </div>
+
+      @if (manager()) {
+        <div class="person-row">
+          <div class="person-avatar">
+            {{ manager()?.full_name?.charAt(0)?.toUpperCase() ?? '' }}
+          </div>
+          <div class="person-info">
+            <strong>{{ manager()?.full_name }}</strong>
+            <span>Manager</span>
+          </div>
+          <span class="status active">Active</span>
+        </div>
+      } @else if (managerInvite()) {
+        <div class="person-row">
+          <div class="person-avatar">
+            {{ managerInvite()?.email?.charAt(0)?.toUpperCase() ?? '' }}
+          </div>
+          <div class="person-info">
+            <strong>{{ managerInvite()?.email }}</strong>
+            <span>Manager invitation</span>
+          </div>
+          <!-- Replaced function execution with clean computed value call -->
+          <span
+            class="invite-status"
+            [class.pending]="inviteStatus() === 'Pending'"
+            [class.expired]="inviteStatus() === 'Expired'"
+          >
+            {{ inviteStatus() }}
+          </span>
+        </div>
+      } @else {
+        <div class="placeholder-state">
+          No manager has been assigned to this organisation.
+        </div>
+      }
+    </section>
+
+    <section class="content-card">
+      <div class="card-header">
+        <div>
+          <h2>Agents</h2>
+          <p>
+            {{ agentCount() }} support
+            {{ agentCount() === 1 ? 'agent' : 'agents' }}
+          </p>
+        </div>
+      </div>
+
+      @if (agents().length > 0) {
+        @for (agent of agents(); track agent.id) {
+          <div class="person-row">
+            <div class="person-avatar">
+              {{ agent?.full_name?.charAt(0)?.toUpperCase() ?? '' }}
+            </div>
+            <div class="person-info">
+              <strong>{{ agent?.full_name }}</strong>
+              <span>Agent</span>
+            </div>
+            <span class="status active">Active</span>
+          </div>
+        }
+      } @else {
+        <div class="placeholder-state">
+          No agents have joined this organisation yet.
+        </div>
+      }
+    </section>
+  }
+</div>

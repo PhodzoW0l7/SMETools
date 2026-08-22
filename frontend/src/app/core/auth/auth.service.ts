@@ -129,4 +129,64 @@ export class AuthService {
     this._session.set(null);
     this.router.navigate(['/auth/login']);
   }
+
+  async getInvitation(token: string): Promise<any> {
+
+  const { data, error } = await this.supabase.client.rpc(
+    'get_invite_by_token',
+    {
+      invite_token: token
+    }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data?.length) {
+    throw new Error('Invitation not found.');
+  }
+
+  return data[0];
+}
+
+
+async acceptInvitation(
+  token: string,
+  fullName: string,
+  password: string
+): Promise<void> {
+
+  const invite = await this.getInvitation(token);
+
+  if (invite.accepted) {
+    throw new Error('This invitation has already been accepted.');
+  }
+
+  if (new Date(invite.expires_at) < new Date()) {
+    throw new Error('This invitation has expired.');
+  }
+
+  const { error } = await this.supabase.client.auth.signUp({
+    email: invite.email,
+    password,
+
+    options: {
+      data: {
+        full_name: fullName,
+
+        // Important:
+        // no role and no org_id sent from Angular.
+        invite_token: token
+      },
+
+      emailRedirectTo:
+        `${window.location.origin}/auth/login`
+    }
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
 }

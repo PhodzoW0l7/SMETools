@@ -1,161 +1,244 @@
--- 1. Custom Access Token Hook
-CREATE OR REPLACE FUNCTION custom_access_token_hook(event JSONB)
-RETURNS JSONB AS $$
-DECLARE
-    claims      JSONB;
-    user_org_id UUID;
-    user_role   TEXT;
-BEGIN
-    claims := event->'claims';
+-- ============================================================
+-- 009_invitation_acceptance.sql
+-- Secure Manager / Agent invitation acceptance
+-- + Super Admin bootstrap support
+-- ============================================================
 
-    SELECT u.org_id, u.role
-    INTO user_org_id, user_role
-    FROM public.users u
-    WHERE u.id = (event->>'user_id')::UUID;
 
-    IF user_role IS NOT NULL THEN
-        claims := jsonb_set(claims, '{user_role}', to_jsonb(user_role));
-    END IF;
+-- ============================================================
+-- 1. GET INVITATION BY TOKEN
+-- ============================================================
 
-    IF user_org_id IS NOT NULL THEN
-        claims := jsonb_set(claims, '{org_id}', to_jsonb(user_org_id::TEXT));
-    END IF;
-
-    RETURN jsonb_set(event, '{claims}', claims);
-END;
-$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
-
--- Secure token hook permissions
-GRANT EXECUTE ON FUNCTION custom_access_token_hook TO supabase_auth_admin;
-REVOKE EXECUTE ON FUNCTION custom_access_token_hook FROM PUBLIC;
-
--- 2. Safer default role
-ALTER TABLE users ALTER COLUMN role SET DEFAULT 'agent';
-
--- 3. Super admin: full access to organisations
-DROP POLICY IF EXISTS "super admins see all organisations"
-ON public.organisations;
-CREATE POLICY "super admins see all organisations"
-ON public.organisations
-FOR SELECT
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1
-    FROM public.users u
-    WHERE u.id = auth.uid()
-      AND u.role = 'super_admin'
-  )
-);
-
-DROP POLICY IF EXISTS "super admins insert organisations" ON organisations;
-CREATE POLICY "super admins insert organisations"
-    ON organisations FOR INSERT
-    TO authenticated
-    WITH CHECK (auth_role() = 'super_admin');
-
-DROP POLICY IF EXISTS "super admins update all organisations" ON organisations;
-CREATE POLICY "super admins update all organisations"
-    ON organisations FOR UPDATE
-    USING (auth_role() = 'super_admin');
-
-DROP POLICY IF EXISTS "super admins delete organisations" ON organisations;
-CREATE POLICY "super admins delete organisations"
-    ON organisations FOR DELETE
-    USING (auth_role() = 'super_admin');
-
--- 4. Super admin: full access to users across all orgs
-DROP POLICY IF EXISTS "super admins see all users" ON users;
-CREATE POLICY "super admins see all users"
-    ON users FOR SELECT
-    USING (auth_role() = 'super_admin');
-
-DROP POLICY IF EXISTS "super admins manage all users" ON users;
-CREATE POLICY "super admins manage all users"
-    ON users FOR ALL
-    USING (auth_role() = 'super_admin')
-    WITH CHECK (auth_role() = 'super_admin');
-
--- 5. Secure organisation_invites
-ALTER TABLE organisation_invites ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "super admins manage all invites" ON organisation_invites;
-CREATE POLICY "super admins manage all invites"
-    ON organisation_invites FOR ALL
-    USING (auth_role() = 'super_admin')
-    WITH CHECK (auth_role() = 'super_admin');
-
-DROP POLICY IF EXISTS "org members see own org invites" ON organisation_invites;
-CREATE POLICY "org members see own org invites"
-    ON organisation_invites FOR SELECT
-    USING (organisation_id = auth_org_id());
-
-DROP POLICY IF EXISTS "managers invite into own org" ON organisation_invites;
-CREATE POLICY "managers invite into own org"
-    ON organisation_invites FOR INSERT
-    WITH CHECK (
-        organisation_id = auth_org_id()
-        AND auth_role() IN ('admin', 'manager')
-    );
-
--- 6. RPC for Angular service
-CREATE OR REPLACE FUNCTION public.create_organisation_and_invite_manager(
-    organisation_name TEXT,
-    organisation_slug TEXT,
-    manager_name TEXT,
-    manager_email TEXT
+CREATE OR REPLACE FUNCTION public.get_invite_by_token(
+    invite_token UUID
 )
-RETURNS UUID
+RETURNS TABLE (
+    email TEXT,
+    organisation_id UUID,
+    organisation_name TEXT,
+    role TEXT,
+    expires_at TIMESTAMPTZ,
+    accepted BOOLEAN
+)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT
+        i.email,
+        i.organisation_id,
+        o.name AS organisation_name,
+        i.role,
+        i.expires_at,
+        i.accepted
+    FROM public.organisation_invites i
+    JOIN public.organisations o
+        ON o.id = i.organisation_id
+    WHERE i.token = invite_token;
+$$;
+
+
+REVOKE ALL
+ON FUNCTION public.get_invite_by_token(UUID)
+FROM PUBLIC;
+
+
+GRANT EXECUTE
+ON FUNCTION public.get_invite_by_token(UUID)
+TO anon, authenticated;
+
+
+
+-- ============================================================
+-- 2. USER CREATION TRIGGER FUNCTION
+--
+-- Super Admin:
+--   Does NOT require an organisation invitation.
+--
+-- Manager / Agent:
+--   MUST have a valid invitation.
+--   Organisation and role come from the invitation.
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    new_org_id UUID;
-    caller_role TEXT;
-BEGIN
-    -- Verify caller is the Super Admin
-    SELECT role
-    INTO caller_role
-    FROM public.users
-    WHERE id = auth.uid();
 
-    IF caller_role IS DISTINCT FROM 'super_admin' THEN
-        RAISE EXCEPTION 'Only platform administrators can create organisations';
+    supplied_token UUID;
+
+    invite_record public.organisation_invites%ROWTYPE;
+
+BEGIN
+
+    -- ========================================================
+    -- SUPER ADMIN BOOTSTRAP
+    -- ========================================================
+
+    IF LOWER(NEW.email) = 'test@mail.com' THEN
+
+        INSERT INTO public.users (
+            id,
+            org_id,
+            full_name,
+            role
+        )
+        VALUES (
+            NEW.id,
+            NULL,
+            COALESCE(
+                NULLIF(
+                    NEW.raw_user_meta_data->>'full_name',
+                    ''
+                ),
+                'Phodzo Nagana'
+            ),
+            'super_admin'
+        );
+
+        RETURN NEW;
+
     END IF;
 
-    -- Create organisation
-    INSERT INTO public.organisations (name, slug)
-    VALUES (organisation_name, organisation_slug)
-    RETURNING id INTO new_org_id;
 
-    -- Create Manager invitation
-    INSERT INTO public.organisation_invites (email, organisation_id, role, invited_by)
-    VALUES (LOWER(manager_email), new_org_id, 'manager', auth.uid());
 
-    RETURN new_org_id;
+    -- ========================================================
+    -- MANAGER / AGENT SIGNUP
+    -- Must originate from an invitation.
+    -- ========================================================
+
+    IF NEW.raw_user_meta_data->>'invite_token' IS NULL THEN
+
+        RAISE EXCEPTION
+            'A valid organisation invitation is required';
+
+    END IF;
+
+
+
+    -- ========================================================
+    -- CONVERT INVITE TOKEN TO UUID
+    -- ========================================================
+
+    BEGIN
+
+        supplied_token :=
+            (NEW.raw_user_meta_data->>'invite_token')::UUID;
+
+    EXCEPTION
+
+        WHEN invalid_text_representation THEN
+
+            RAISE EXCEPTION
+                'Invalid invitation token';
+
+    END;
+
+
+
+    -- ========================================================
+    -- FIND VALID INVITATION
+    -- ========================================================
+
+    SELECT *
+    INTO invite_record
+    FROM public.organisation_invites
+    WHERE token = supplied_token
+      AND LOWER(email) = LOWER(NEW.email)
+      AND accepted = FALSE
+      AND expires_at > NOW();
+
+
+
+    -- ========================================================
+    -- INVITATION DOES NOT EXIST / EXPIRED / USED
+    -- ========================================================
+
+    IF NOT FOUND THEN
+
+        RAISE EXCEPTION
+            'Invitation is invalid, expired or already accepted';
+
+    END IF;
+
+
+
+    -- ========================================================
+    -- CREATE APPLICATION USER PROFILE
+    --
+    -- IMPORTANT:
+    -- role and org_id come from the DB invitation.
+    -- Angular cannot choose them.
+    -- ========================================================
+
+    INSERT INTO public.users (
+        id,
+        org_id,
+        full_name,
+        role
+    )
+    VALUES (
+        NEW.id,
+        invite_record.organisation_id,
+
+        COALESCE(
+            NULLIF(
+                NEW.raw_user_meta_data->>'full_name',
+                ''
+            ),
+            'Unknown'
+        ),
+
+        invite_record.role
+    );
+
+
+
+    -- ========================================================
+    -- MARK INVITATION AS ACCEPTED
+    -- ========================================================
+
+    UPDATE public.organisation_invites
+    SET accepted = TRUE
+    WHERE id = invite_record.id;
+
+
+
+    RETURN NEW;
+
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.create_organisation_and_invite_manager(TEXT, TEXT, TEXT, TEXT) TO authenticated;
 
-GRANT SELECT ON public.users TO authenticated;
 
-DROP POLICY IF EXISTS "users read own profile"
-ON public.users;
+-- ============================================================
+-- 3. FUNCTION PERMISSIONS
+-- ============================================================
 
-CREATE POLICY "users read own profile"
-ON public.users
-FOR SELECT
-TO authenticated
-USING (
-    id = auth.uid()
-);
+REVOKE ALL
+ON FUNCTION public.handle_new_user()
+FROM PUBLIC;
 
-GRANT SELECT, INSERT, UPDATE, DELETE
-ON public.organisations
-TO authenticated;
 
-GRANT SELECT, INSERT, UPDATE, DELETE
-ON public.organisation_invites
-TO authenticated;
+GRANT EXECUTE
+ON FUNCTION public.handle_new_user()
+TO supabase_auth_admin;
+
+
+
+-- ============================================================
+-- 4. ENSURE AUTH USER TRIGGER POINTS TO THIS FUNCTION
+-- ============================================================
+
+DROP TRIGGER IF EXISTS on_auth_user_created
+ON auth.users;
+
+
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT
+ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_new_user();

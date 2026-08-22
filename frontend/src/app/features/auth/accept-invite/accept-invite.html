@@ -1,0 +1,146 @@
+<div class="invite-page">
+
+  <div class="invite-card">
+
+    <div class="logo-wrap">
+      <img
+        src="logo.png"
+        alt="IntersecMail"
+        class="logo"
+      />
+    </div>
+
+    @if (loading()) {
+
+      <p class="state-message">
+        Checking invitation...
+      </p>
+
+    }
+
+    @else if (errorMessage() && !invite()) {
+
+      <div class="error-state">
+
+        <h2>Invitation unavailable</h2>
+
+        <p>
+          {{ errorMessage() }}
+        </p>
+
+      </div>
+
+    }
+
+    @else if (success()) {
+
+      <div class="success-state">
+
+        <div class="success-icon">
+          ✓
+        </div>
+
+        <h2>Account created</h2>
+
+        <p>
+          Your manager account has been created successfully.
+        </p>
+
+        <a
+          routerLink="/auth/login"
+          class="btn-primary"
+        >
+          Continue to sign in
+        </a>
+
+      </div>
+
+    }
+
+    @else if (invite()) {
+
+      <p class="eyebrow">
+        You're invited
+      </p>
+
+      <h1>
+        Join {{ invite().organisation_name }}
+      </h1>
+
+      <p class="subtitle">
+        You've been invited as a
+        <strong>{{ invite().role }}</strong>.
+      </p>
+
+      <div class="invite-details">
+
+        <div>
+          <span>Email</span>
+          <strong>{{ invite().email }}</strong>
+        </div>
+
+        <div>
+          <span>Organisation</span>
+          <strong>
+            {{ invite().organisation_name }}
+          </strong>
+        </div>
+
+      </div>
+
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+      >
+
+        <div class="field">
+
+          <label>Full name</label>
+
+          <input
+            type="text"
+            formControlName="fullName"
+            placeholder="Jane Smith"
+          />
+
+        </div>
+
+        <div class="field">
+
+          <label>Create password</label>
+
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="At least 8 characters"
+          />
+
+        </div>
+
+        @if (errorMessage()) {
+
+          <div class="error-banner">
+            {{ errorMessage() }}
+          </div>
+
+        }
+
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="submitting()"
+        >
+          {{
+            submitting()
+              ? 'Creating account...'
+              : 'Accept invitation'
+          }}
+        </button>
+
+      </form>
+
+    }
+
+  </div>
+
+</div>
